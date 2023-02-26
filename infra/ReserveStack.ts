@@ -69,7 +69,7 @@ export class ReserveStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       deletionProtection: false,
       databaseName: 'reservationsDb',
-      publiclyAccessible: false,
+      publiclyAccessible: true,
     });
 
     const helloLambdaNodeJs = new NodejsFunction(this, 'helloLambdaNodeJs', {
@@ -86,6 +86,13 @@ export class ReserveStack extends cdk.Stack {
       handler: 'handler',
     })
 
+    const initCreateTab = new NodejsFunction(this, 'ininCreateTab', {
+      vpc,
+      runtime: Runtime.NODEJS_18_X,
+      entry: (join(__dirname, '..', 'services', 'crud-lambda', 'initCreateTab.ts')),
+      handler: 'handler',
+    })
+
 
     // Lambda integrations
     const helloLambdaIntegration = new LambdaIntegration(helloLambdaNodeJs);
@@ -95,6 +102,10 @@ export class ReserveStack extends cdk.Stack {
     const readLambdaIntegration = new LambdaIntegration(readLambda);
     const readLambdaResource = this.api.root.addResource('readLambda');
     readLambdaResource.addMethod('GET', readLambdaIntegration);
+
+    const initCreateTabIntegration = new LambdaIntegration(initCreateTab);
+    const initCreateTabResource = this.api.root.addResource('createTable');
+    initCreateTabResource.addMethod('GET', initCreateTabIntegration);
 
     const s3ListPolicy = new PolicyStatement();
     s3ListPolicy.addActions('s3:ListAllMyBuckets');
@@ -108,6 +119,7 @@ export class ReserveStack extends cdk.Stack {
     rdsReadPolicy.addResources(dbInstance.secret!.secretArn);
 
     readLambda.addToRolePolicy(rdsReadPolicy);
+    initCreateTab.addToRolePolicy(rdsReadPolicy);
 
 
     // dbInstance.connections.allowFrom(ec2Instance, ec2.Port.tcp(5432));
