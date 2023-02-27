@@ -9,3 +9,6 @@ GET {{endpoint}}/readLambda/?search=reservation&creteria=somecreteria
 
 GET {{endpoint}}/create-table
 ###
+
+GET {{endpoint}}/read
+###
