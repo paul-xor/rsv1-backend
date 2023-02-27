@@ -1,5 +1,5 @@
 
-@endpoint = https://c1v2xozat1.execute-api.ca-central-1.amazonaws.com/prod/
+@endpoint = https://hkawz53qd0.execute-api.us-east-1.amazonaws.com/prod/
 
 GET {{endpoint}}/hello
 ###
@@ -7,5 +7,5 @@ GET {{endpoint}}/hello
 GET {{endpoint}}/readLambda/?search=reservation&creteria=somecreteria
 ###
 
-GET {{endpoint}}/createTable
+GET {{endpoint}}/create-table
 ###

@@ -1,13 +1,10 @@
-import { SpaceStack} from "./SpaceStack";
-import { ReserveStack } from "./ReserveStack";
+
+import { SingleLambdaStack } from './Single-Lambda';
 import { App } from "aws-cdk-lib";
 
 
 const app = new App()
-// new SpaceStack(app, 'Space-finder', {
-//   stackName: 'SpaceFinder'
-// })
 
-new ReserveStack(app, 'Reserve-Stack', {
-  stackName: 'ReserveStack'
+new SingleLambdaStack(app, 'SingleLambdaStack', {
+  stackName: 'SingleLambdaStack'
 })
