@@ -1,4 +1,4 @@
-import { APIGatewayProxyHandler } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import * as mysql from 'mysql2/promise';
 
 const RDS_HOST = 'database-2.cmuvxrqhgxjx.us-east-1.rds.amazonaws.com';
@@ -6,6 +6,31 @@ const RDS_PORT = 3306;
 const RDS_USER = 'admin';
 const RDS_PASSWORD = 'NonaNona';
 const RDS_DATABASE = 'reservationsDb';
+
+const query = `
+  INSERT INTO reservations (
+    arrival_date,
+    departure_date,
+    room_size,
+    room_quantity,
+    first_name,
+    last_name,
+    email,
+    phone,
+    street_name,
+    street_number,
+    zip_code,
+    state,
+    city,
+    extras,
+    payment,
+    note,
+    tags,
+    reminder,
+    newsletter,
+    confirm
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`;
 
 interface Reservation {
   arrival_date: string;
@@ -30,7 +55,7 @@ interface Reservation {
   confirm: boolean;
 }
 
-export const handler: APIGatewayProxyHandler = async (event: any, context: any) => {
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const connection = await mysql.createConnection({
     host: RDS_HOST,
     port: RDS_PORT,
@@ -40,7 +65,15 @@ export const handler: APIGatewayProxyHandler = async (event: any, context: any) 
   });
 
   try {
-    const body = JSON.parse(event.body);
+    const body = event.body ? JSON.parse(JSON.stringify(event.body)) : null;
+
+    if (!body) {
+      return {
+        statusCode: 400,
+        body: 'Invalid reservation data',
+      };
+    }
+
     const {
       arrival_date,
       departure_date,
@@ -64,7 +97,7 @@ export const handler: APIGatewayProxyHandler = async (event: any, context: any) 
       confirm,
     } = body as Reservation;
 
-    const [result] = await connection.execute<mysql.OkPacket>('INSERT INTO reservations (arrival_date, departure_date, room_size, room_quantity, first_name, last_name, email, phone, street_name, street_number, zip_code, state, city, extras, payment, note, tags, reminder, newsletter, confirm) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+    const [result] = await connection.execute<mysql.OkPacket>(query, [
       arrival_date,
       departure_date,
       room_size,

@@ -67,9 +67,6 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   const reservationId = event.queryStringParameters?.id;
    const reservationData: ReservationData = event.body ? JSON.parse(JSON.stringify(event.body)) : null;
 
-  console.log('#reservationId: ', reservationId)
-  console.log('#reservationData: ', reservationData)
-
   if (!reservationData) {
     return {
       statusCode: 400,
