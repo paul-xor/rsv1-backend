@@ -18,9 +18,9 @@ node_modules
 
 # CDK asset staging directory
 .cdk.staging
-
-test
 .vscode
+test
+services/crud-lambda/update-test.ts
 
 
 # Runtime data

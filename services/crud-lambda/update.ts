@@ -1,3 +1,4 @@
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import * as mysql from 'mysql2/promise';
 
 const RDS_HOST = 'database-2.cmuvxrqhgxjx.us-east-1.rds.amazonaws.com';
@@ -54,25 +55,7 @@ interface ReservationData {
   confirm: string;
 }
 
-interface LambdaEvent {
-  pathParameters: {
-    id: string;
-  };
-  body: string;
-}
-
-interface LambdaContext {
-  awsRequestId: string;
-  callbackWaitsForEmptyEventLoop: boolean;
-  functionName: string;
-  functionVersion: string;
-  memoryLimitInMB: string;
-  logGroupName: string;
-  logStreamName: string;
-  invokedFunctionArn: string;
-}
-
-export const handler = async (event: LambdaEvent, context: LambdaContext) => {
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const connection = await mysql.createConnection({
     host: RDS_HOST,
     port: RDS_PORT,
@@ -81,8 +64,18 @@ export const handler = async (event: LambdaEvent, context: LambdaContext) => {
     database: RDS_DATABASE,
   });
 
-  const reservationId = event.pathParameters.id;
-  const reservationData: ReservationData = JSON.parse(event.body);
+  const reservationId = event.queryStringParameters?.id;
+   const reservationData: ReservationData = event.body ? JSON.parse(JSON.stringify(event.body)) : null;
+
+  console.log('#reservationId: ', reservationId)
+  console.log('#reservationData: ', reservationData)
+
+  if (!reservationData) {
+    return {
+      statusCode: 400,
+      body: 'Invalid reservation data',
+    };
+  }
 
   const {
     arrival_date,
