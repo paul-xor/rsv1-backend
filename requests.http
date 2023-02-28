@@ -12,3 +12,30 @@ GET {{endpoint}}/create-table
 
 GET {{endpoint}}/read
 ###
+
+GET {{endpoint}}/update/5
+Content-Type: application/json
+
+{
+  "arrival_date": "2023-11-18",
+  "departure_date": "2023-11-20",
+  "room_size": "business-suit",
+  "room_quantity": 4,
+  "first_name": "John",
+  "last_name": "Doe",
+  "email": "johndoe@example.com",
+  "phone": "1234567890",
+  "street_name": "Main St",
+  "street_number": "123",
+  "zip_code": "12345",
+  "state": "CA",
+  "city": "San Francisco",
+  "extras": "extraBreakfast",
+  "payment": "cc",
+  "note": "high floor",
+  "tags": "business",
+  "reminder": false,
+  "newsletter": false,
+  "confirm": true
+}
+###
