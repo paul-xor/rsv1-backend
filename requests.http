@@ -66,3 +66,6 @@ Content-Type: application/json
   "confirm": true
 }
 ###
+
+DELETE {{endpoint}}/delete?id=2
+###

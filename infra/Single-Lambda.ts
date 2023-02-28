@@ -40,7 +40,7 @@ export class SingleLambdaStack extends cdk.Stack {
 
     const updateLambda = new lambda.NodejsFunction(this, 'updateLambda', {
       runtime: Runtime.NODEJS_18_X,
-      entry: (join(__dirname, '..', 'services', 'crud-lambda', 'read.ts')),
+      entry: (join(__dirname, '..', 'services', 'crud-lambda', 'update.ts')),
       handler: 'handler',
       bundling: {
         minify: true, // minify code, defaults to false
@@ -53,7 +53,20 @@ export class SingleLambdaStack extends cdk.Stack {
 
     const createLambda = new lambda.NodejsFunction(this, 'createLambda', {
       runtime: Runtime.NODEJS_18_X,
-      entry: (join(__dirname, '..', 'services', 'crud-lambda', 'read.ts')),
+      entry: (join(__dirname, '..', 'services', 'crud-lambda', 'create.ts')),
+      handler: 'handler',
+      bundling: {
+        minify: true, // minify code, defaults to false
+        sourceMap: true, // include source map, defaults to false
+        sourceMapMode: lambda.SourceMapMode.INLINE, // defaults to SourceMapMode.DEFAULT
+        sourcesContent: false, // do not include original source into source map, defaults to true
+        target: 'es2020', // target environment for the generated JavaScript code
+      },
+    })
+
+    const deleteLambda = new lambda.NodejsFunction(this, 'deleteLambda', {
+      runtime: Runtime.NODEJS_18_X,
+      entry: (join(__dirname, '..', 'services', 'crud-lambda', 'delete.ts')),
       handler: 'handler',
       bundling: {
         minify: true, // minify code, defaults to false
@@ -80,5 +93,9 @@ export class SingleLambdaStack extends cdk.Stack {
     const createLambdaIntegration = new LambdaIntegration(createLambda);
     const createLambdaResource = this.api.root.addResource('new-create');
     createLambdaResource.addMethod('POST', createLambdaIntegration);
+
+    const deleteLambdaIntegration = new LambdaIntegration(deleteLambda);
+    const deleteLambdaResource = this.api.root.addResource('delete');
+    deleteLambdaResource.addMethod('DELETE', deleteLambdaIntegration);
   }
 }
