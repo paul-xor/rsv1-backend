@@ -30,6 +30,7 @@
     },
     "ReturnResults": {
       "Type": "Pass",
+      "ResultPath": "$.searchResults",
       "End": true
     },
     "InvalidCriteria": {

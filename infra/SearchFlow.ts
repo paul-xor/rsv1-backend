@@ -14,6 +14,7 @@ import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 export class SearchFlowStack extends cdk.Stack {
   private api : RestApi = new RestApi(this, 'SearchFlowApi')
   public static cfnStepFunction: stepfunctions.CfnStateMachine;
+  public static cfnSearchResultsFunction: NodejsFunction;
 
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -79,11 +80,17 @@ export class SearchFlowStack extends cdk.Stack {
       ]
     })
 
+    const searchResultsFunction = new NodejsFunction(this, 'searchResultsFunction', {
+      runtime: Runtime.NODEJS_18_X,
+      entry: (join(__dirname, '..', 'services', 'crud-lambda', 'searchResults.ts')),
+      handler: 'handler'
+    })
+
+    SearchFlowStack.cfnSearchResultsFunction = searchResultsFunction;
+
     const searchLambdaIntegration = new LambdaIntegration(searchLambda);
     const searchLambdaResource = this.api.root.addResource('search');
     searchLambdaResource.addMethod('GET', searchLambdaIntegration);
-
-
 
     new cdk.CfnOutput(this, 'searchByEmailLambdaArn', {
       value: searchByEmailLambda.functionArn,
