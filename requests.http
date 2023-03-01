@@ -1,6 +1,8 @@
 
 @endpoint = https://hkawz53qd0.execute-api.us-east-1.amazonaws.com/prod/
 
+@SearchFlowApiEndpoint = https://0vk7loesla.execute-api.us-east-1.amazonaws.com/prod/
+
 GET {{endpoint}}/hello
 ###
 
@@ -68,4 +70,7 @@ Content-Type: application/json
 ###
 
 DELETE {{endpoint}}/delete?id=2
+###
+
+GET {{SearchFlowApiEndpoint}}/search/?search=Los&creteria=city
 ###

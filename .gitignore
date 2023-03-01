@@ -21,6 +21,7 @@ node_modules
 .vscode
 test
 services/crud-lambda/update-test.ts
+services/node-lambda/hello-test.ts
 
 
 # Runtime data

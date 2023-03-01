@@ -16,7 +16,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     database: RDS_DATABASE,
   });
 
-  const searchTerm = event.queryStringParameters?.lastName || '';
+  const searchTerm = event.queryStringParameters?.searchTerm || '';
 
   try {
     const [rows] = await connection.execute<mysql.RowDataPacket[]>(
