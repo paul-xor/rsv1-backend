@@ -4,7 +4,7 @@ import * as stepfunctions from "aws-cdk-lib/aws-stepfunctions";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as fs from "fs";
 
-import { Function as LambdaFunction, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { join } from 'path';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
@@ -13,8 +13,7 @@ import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 
 export class SearchFlowStack extends cdk.Stack {
   private api : RestApi = new RestApi(this, 'SearchFlowApi')
-  public static cfnStepFunction: stepfunctions.CfnStateMachine;
-  public static cfnSearchResultsFunction: NodejsFunction;
+  private cfnStepFunction: stepfunctions.CfnStateMachine;
 
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -30,7 +29,7 @@ export class SearchFlowStack extends cdk.Stack {
 
     const file = fs.readFileSync('./logic/search.simple.json.asl', 'utf8');
 
-    SearchFlowStack.cfnStepFunction = new stepfunctions.CfnStateMachine(this, 'cfnStepFunction', {
+    this.cfnStepFunction = new stepfunctions.CfnStateMachine(this, 'cfnStepFunction', {
       roleArn: roleARN.roleArn,
       definitionString: file.toString(),
     });
@@ -49,48 +48,75 @@ export class SearchFlowStack extends cdk.Stack {
 
     searchByEmailLambda.addToRolePolicy(new PolicyStatement({
       actions: ['lambda:InvokeFunction'],
-      resources: [SearchFlowStack.cfnStepFunction.attrArn]
+      resources: [this.cfnStepFunction.attrArn]
     }));
 
     searchByCityLambda.addToRolePolicy(new PolicyStatement({
       actions: ['lambda:InvokeFunction'],
-      resources: [SearchFlowStack.cfnStepFunction.attrArn]
+      resources: [this.cfnStepFunction.attrArn]
     }));
+
+    const searchResultsFunction = new NodejsFunction(this, 'searchResultsFunction', {
+      runtime: Runtime.NODEJS_18_X,
+      entry: (join(__dirname, '..', 'services', 'crud-lambda', 'searchResults.ts')),
+      handler: 'handler',
+      initialPolicy: [
+        new PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: [
+            'states:DescribeExecution'
+          ],
+          resources: ["arn:aws:states:us-east-1:201682123230:execution:*"]
+        })
+      ]
+    })
 
     const searchLambda = new lambda.NodejsFunction(this, 'searchLambda', {
       runtime: Runtime.NODEJS_18_X,
       entry: (join(__dirname, '..', 'services', 'crud-lambda', 'search.ts')),
       handler: 'handler',
+      timeout: cdk.Duration.seconds(5),
       environment: {
-        STATE_MACHINE_ARN: SearchFlowStack.cfnStepFunction.attrArn
+        STEPFUNCTION_ARN: this.cfnStepFunction.attrArn,
+        SEARCH_RESULT_ARN: searchResultsFunction.functionArn
       },
       initialPolicy: [
         new PolicyStatement({
           actions: [
             'states:StartExecution'
           ],
-          resources: [SearchFlowStack.cfnStepFunction.attrArn]
+          resources: [this.cfnStepFunction.attrArn]
         }),
         new PolicyStatement({
           actions: [
             'lambda:InvokeFunction'
           ],
           resources: ["*"]
+        }),
+        new PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: [
+            'logs:CreateLogGroup',
+            'logs:CreateLogStream',
+            'logs:DescribeLogGroups',
+            'logs:DescribeLogStreams',
+            'logs:PutLogEvents',
+            'logs:GetLogEvents',
+            'logs:FilterLogEvents'
+          ],
+          resources: ["*"]
         })
       ]
     })
 
-    const searchResultsFunction = new NodejsFunction(this, 'searchResultsFunction', {
-      runtime: Runtime.NODEJS_18_X,
-      entry: (join(__dirname, '..', 'services', 'crud-lambda', 'searchResults.ts')),
-      handler: 'handler'
-    })
-
-    SearchFlowStack.cfnSearchResultsFunction = searchResultsFunction;
-
     const searchLambdaIntegration = new LambdaIntegration(searchLambda);
     const searchLambdaResource = this.api.root.addResource('search');
     searchLambdaResource.addMethod('GET', searchLambdaIntegration);
+
+    new cdk.CfnOutput(this, 'searchResultsFunctionArn', {
+      value: searchResultsFunction.functionArn,
+      description: 'The ARN of the searchResultsFunction Lambda function'
+    });
 
     new cdk.CfnOutput(this, 'searchByEmailLambdaArn', {
       value: searchByEmailLambda.functionArn,
@@ -100,6 +126,11 @@ export class SearchFlowStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'searchByCityLambdaArn', {
       value: searchByCityLambda.functionArn,
       description: 'The ARN of the searchByCity Lambda function'
+    });
+
+    new cdk.CfnOutput(this, 'cfnStepFunctionArn', {
+      value: this.cfnStepFunction.attrArn,
+      description: 'The ARN of the cfnStepFunction function'
     });
 
   }

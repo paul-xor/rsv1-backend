@@ -20,12 +20,14 @@
     },
     "SearchByEmail": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:201682123230:function:SearchFlowStack-searchByEmail96E4F29F-r942cFhnlnzm",
+      "Resource": "arn:aws:lambda:us-east-1:201682123230:function:SearchFlowStack-searchByEmail96E4F29F-SCPMBO6FQwjz",
+      "InputPath": "$.searchTerm",
       "Next": "ReturnResults"
     },
     "SearchByCity": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:201682123230:function:SearchFlowStack-searchByCityDA80C225-Iw8hLlGXyuvJ",
+      "Resource": "arn:aws:lambda:us-east-1:201682123230:function:SearchFlowStack-searchByCityDA80C225-cZeoup4HI4GL",
+      "InputPath": "$.searchTerm",
       "Next": "ReturnResults"
     },
     "ReturnResults": {
