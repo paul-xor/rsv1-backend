@@ -1,7 +1,7 @@
 
 @endpoint = https://hkawz53qd0.execute-api.us-east-1.amazonaws.com/prod/
 
-@SearchFlowApiEndpoint = https://4fq6jyx1bj.execute-api.us-east-1.amazonaws.com/prod/
+@SearchFlowApiEndpoint = https://33ye23ukr3.execute-api.us-east-1.amazonaws.com/prod/
 
 GET {{endpoint}}/hello
 ###
@@ -74,5 +74,11 @@ DELETE {{endpoint}}/delete?id=2
 
 GET {{SearchFlowApiEndpoint}}/search/?search=Los&criteria=city
 ###
-GET {{SearchFlowApiEndpoint}}/search/?search=jane&criteria=email
+GET {{SearchFlowApiEndpoint}}/search/?search=bob&criteria=email
+###
+
+GET {{SearchFlowApiEndpoint}}/search/?search=ali&criteria=firstName
+###
+
+GET {{SearchFlowApiEndpoint}}/search/?search=jo&criteria=lastName
 ###

@@ -25,22 +25,6 @@ export class SearchFlowStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    //create a roleARN for step function
-    const roleARN = new iam.Role(this, 'StepFunctionRole', {
-      assumedBy: new iam.ServicePrincipal('states.amazonaws.com'),
-      managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
-        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaVPCAccessExecutionRole')
-      ]
-    });
-
-    const file = fs.readFileSync('./logic/search.simple.json.asl', 'utf8');
-
-    this.cfnStepFunction = new stepfunctions.CfnStateMachine(this, 'cfnStepFunction', {
-      roleArn: roleARN.roleArn,
-      definitionString: file.toString(),
-    });
-
     const searchByEmailLambda = new lambda.NodejsFunction(this, 'searchByEmail', {
       runtime: Runtime.NODEJS_18_X,
       entry: (join(__dirname, '..', 'services', 'crud-lambda', 'searchByEmail.ts')),
@@ -58,17 +42,77 @@ export class SearchFlowStack extends cdk.Stack {
       runtime: Runtime.NODEJS_18_X,
       entry: (join(__dirname, '..', 'services', 'crud-lambda', 'searchByCity.ts')),
       handler: 'handler',
+      environment: {
+        RDS_HOST: this.rdsHost ?? '',
+        RDS_PORT: this.rdsPort ?? '',
+        RDS_USER: this.rdsUser ?? '',
+        RDS_PASSWORD: this.rdsPassword ?? '',
+        RDS_DATABASE: this.rdsDatabase ?? '',
+      }
     })
 
-    searchByEmailLambda.addToRolePolicy(new PolicyStatement({
-      actions: ['lambda:InvokeFunction'],
-      resources: [this.cfnStepFunction.attrArn]
-    }));
+    const searchByFirstNameLambda = new lambda.NodejsFunction(this, 'searchByFirstName', {
+      runtime: Runtime.NODEJS_18_X,
+      entry: (join(__dirname, '..', 'services', 'crud-lambda', 'searchByFirstName.ts')),
+      handler: 'handler',
+      environment: {
+        RDS_HOST: this.rdsHost ?? '',
+        RDS_PORT: this.rdsPort ?? '',
+        RDS_USER: this.rdsUser ?? '',
+        RDS_PASSWORD: this.rdsPassword ?? '',
+        RDS_DATABASE: this.rdsDatabase ?? '',
+      }
+    })
 
-    searchByCityLambda.addToRolePolicy(new PolicyStatement({
+    const searchByLastNameLambda = new lambda.NodejsFunction(this, 'searchByLastName', {
+      runtime: Runtime.NODEJS_18_X,
+      entry: (join(__dirname, '..', 'services', 'crud-lambda', 'searchByLastName.ts')),
+      handler: 'handler',
+      environment: {
+        RDS_HOST: this.rdsHost ?? '',
+        RDS_PORT: this.rdsPort ?? '',
+        RDS_USER: this.rdsUser ?? '',
+        RDS_PASSWORD: this.rdsPassword ?? '',
+        RDS_DATABASE: this.rdsDatabase ?? '',
+      }
+    })
+
+    const searchByEmailLambdaArn = searchByEmailLambda.functionArn;
+    const searchByCityLambdaArn = searchByCityLambda.functionArn;
+    const searchByFirstNameLambdaArn = searchByFirstNameLambda.functionArn;
+    const searchByLastNameLambdaArn = searchByLastNameLambda.functionArn;
+
+    const lambdaInvokePolicy = new iam.PolicyStatement({
       actions: ['lambda:InvokeFunction'],
-      resources: [this.cfnStepFunction.attrArn]
-    }));
+      resources: [
+        searchByEmailLambdaArn,
+        searchByCityLambdaArn,
+        searchByFirstNameLambdaArn,
+        searchByLastNameLambdaArn
+      ]
+    })
+
+    //create a roleARN for step function
+    const roleARN = new iam.Role(this, 'StepFunctionRole', {
+      assumedBy: new iam.ServicePrincipal('states.amazonaws.com'),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaVPCAccessExecutionRole'),
+      ],
+      inlinePolicies: {
+        'lambda-invoke': new iam.PolicyDocument({
+          statements: [lambdaInvokePolicy]
+        })
+      }
+    });
+
+    const file = fs.readFileSync('./logic/search.simple.json.asl', 'utf8');
+
+    this.cfnStepFunction = new stepfunctions.CfnStateMachine(this, 'cfnStepFunction', {
+      roleArn: roleARN.roleArn,
+      definitionString: file.toString(),
+    });
+
 
     const searchResultsFunction = new NodejsFunction(this, 'searchResultsFunction', {
       runtime: Runtime.NODEJS_18_X,
@@ -130,6 +174,16 @@ export class SearchFlowStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'searchResultsFunctionArn', {
       value: searchResultsFunction.functionArn,
       description: 'The ARN of the searchResultsFunction Lambda function'
+    });
+
+    new cdk.CfnOutput(this, 'searchByFirstNameLambdaArn', {
+      value: searchByFirstNameLambda.functionArn,
+      description: 'The ARN of the searchByFirstName Lambda function'
+    });
+
+    new cdk.CfnOutput(this, 'searchByLastNameLambdaArn', {
+      value: searchByLastNameLambda.functionArn,
+      description: 'The ARN of the searchByLastName Lambda function'
     });
 
     new cdk.CfnOutput(this, 'searchByEmailLambdaArn', {
