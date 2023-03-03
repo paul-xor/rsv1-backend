@@ -9,11 +9,18 @@ import { join } from 'path';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import * as dotenv from 'dotenv';
 
+dotenv.config();
 
 export class SearchFlowStack extends cdk.Stack {
-  private api : RestApi = new RestApi(this, 'SearchFlowApi')
+  private api : RestApi = new RestApi(this, 'SearchFlowApi');
   private cfnStepFunction: stepfunctions.CfnStateMachine;
+  private rdsHost: string | undefined = process.env.RDS_HOST;
+  private rdsPort: string | undefined = process.env.RDS_PORT;
+  private rdsUser: string | undefined = process.env.RDS_USER;
+  private rdsPassword: string | undefined = process.env.RDS_PASSWORD;
+  private rdsDatabase: string | undefined = process.env.RDS_DATABASE;
 
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -38,6 +45,13 @@ export class SearchFlowStack extends cdk.Stack {
       runtime: Runtime.NODEJS_18_X,
       entry: (join(__dirname, '..', 'services', 'crud-lambda', 'searchByEmail.ts')),
       handler: 'handler',
+      environment: {
+        RDS_HOST: this.rdsHost ?? '',
+        RDS_PORT: this.rdsPort ?? '',
+        RDS_USER: this.rdsUser ?? '',
+        RDS_PASSWORD: this.rdsPassword ?? '',
+        RDS_DATABASE: this.rdsDatabase ?? '',
+      }
     })
 
     const searchByCityLambda = new lambda.NodejsFunction(this, 'searchByCity', {
