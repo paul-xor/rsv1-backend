@@ -5,7 +5,6 @@ import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import * as lambda from 'aws-cdk-lib/aws-lambda-nodejs';
 
-
 export class SingleLambdaStack extends cdk.Stack {
   private api : RestApi = new RestApi(this, 'SpaceApi')
 

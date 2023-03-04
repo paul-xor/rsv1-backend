@@ -1,5 +1,6 @@
-import { APIGatewayProxyEvent } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import * as mysql from 'mysql2/promise';
+import { addCorsHeader } from '../../shared/util';
 
 const RDS_HOST = 'database-2.cmuvxrqhgxjx.us-east-1.rds.amazonaws.com';
 const RDS_PORT = 3306;
@@ -31,7 +32,7 @@ interface ISearchResult {
   confirm: boolean;
 }
 
-export const handler = async (event: APIGatewayProxyEvent) => {
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const connection = await mysql.createConnection({
     host: RDS_HOST,
     port: RDS_PORT,
@@ -39,6 +40,12 @@ export const handler = async (event: APIGatewayProxyEvent) => {
     password: RDS_PASSWORD,
     database: RDS_DATABASE,
   });
+
+  const result: APIGatewayProxyResult = {
+    statusCode: 200,
+    body: ''
+  }
+  addCorsHeader(result);
 
   try {
     const [rows] = await connection.execute<mysql.RowDataPacket[]>('SELECT * FROM reservations');
@@ -71,18 +78,14 @@ export const handler = async (event: APIGatewayProxyEvent) => {
         confirm: row.confirm
       }
     })
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify(formattedResults)
-    };
+    result.body = JSON.stringify(formattedResults)
   } catch (error) {
     console.error(`Error reading reservations: ${error}`);
-    return {
-      statusCode: 500,
-      body: 'Error reading reservations'
-    };
+    result.statusCode = 500,
+      result.body = 'Error reading reservations'
   } finally {
     connection.end();
   }
+
+  return result;
 };

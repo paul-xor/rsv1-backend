@@ -1,5 +1,5 @@
 
-@endpoint = https://hkawz53qd0.execute-api.us-east-1.amazonaws.com/prod/
+@endpoint = https://2wrdmmy1m7.execute-api.us-east-1.amazonaws.com/prod/
 
 @SearchFlowApiEndpoint = https://33ye23ukr3.execute-api.us-east-1.amazonaws.com/prod/
 
