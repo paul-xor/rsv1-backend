@@ -98,4 +98,6 @@ export class SingleLambdaStack extends cdk.Stack {
     const deleteLambdaResource = this.api.root.addResource('delete');
     deleteLambdaResource.addMethod('DELETE', deleteLambdaIntegration);
   }
+
+
 }
