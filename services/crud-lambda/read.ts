@@ -55,7 +55,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   } catch (error) {
     console.error(`Error reading reservations: ${error}`);
     result.statusCode = 500,
-      result.body = 'Error reading reservations'
+    result.body = 'Error reading reservations'
   } finally {
     connection.end();
   }

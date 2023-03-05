@@ -1,5 +1,6 @@
 import { Lambda, StepFunctions } from 'aws-sdk';
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { addCorsHeader } from '../../shared/util';
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const { search, criteria } = event.queryStringParameters || {};
@@ -17,6 +18,12 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     stateMachineArn,
     input: JSON.stringify({ searchTerm: search, criteria })
   };
+
+  const result: APIGatewayProxyResult = {
+    statusCode: 200,
+    body: ''
+  }
+  addCorsHeader(result);
 
   try {
     const startExecutionResult = await stepFunctions.startExecution(params).promise();
@@ -38,15 +45,12 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     const searchResultsPayload = searchResultsResponse.Payload?.toString() ?? '';
     const formattedResults = JSON.parse(searchResultsPayload);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(formattedResults)
-    }
+    result.body = JSON.stringify(formattedResults)
   } catch (error) {
     console.error(`Error starting Step Function: ${error}`);
-    return {
-      statusCode: 400,
-      body: 'Error starting Step Function'
-    }
+
+    result.statusCode = 400,
+    result.body = 'Error starting Step Function'
   }
+  return result;
 };
