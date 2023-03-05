@@ -1,11 +1,9 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import * as mysql from 'mysql2/promise';
+import { ReservationData }  from '../types/lambdaTypes';
+import * as dotenv from 'dotenv';
 
-const RDS_HOST = 'database-2.cmuvxrqhgxjx.us-east-1.rds.amazonaws.com';
-const RDS_PORT = 3306;
-const RDS_USER = 'admin';
-const RDS_PASSWORD = 'NonaNona';
-const RDS_DATABASE = 'reservationsDb';
+dotenv.config();
 
 const updateReservationQuery = `
   UPDATE reservations SET
@@ -32,36 +30,13 @@ const updateReservationQuery = `
   WHERE id = ?;
 `;
 
-interface ReservationData {
-  arrival_date: string,
-  departure_date: string,
-  room_size: string,
-  room_quantity: string,
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  street_name: string;
-  street_number: string;
-  zip_code: string;
-  state: string;
-  city: string;
-  extras: string;
-  payment: string;
-  note: string;
-  tags: string;
-  reminder: string;
-  newsletter: string;
-  confirm: string;
-}
-
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const connection = await mysql.createConnection({
-    host: RDS_HOST,
-    port: RDS_PORT,
-    user: RDS_USER,
-    password: RDS_PASSWORD,
-    database: RDS_DATABASE,
+    host: process.env.RDS_HOST,
+    port: Number(process.env.RDS_PORT),
+    user: process.env.RDS_USER,
+    password: process.env.RDS_PASSWORD,
+    database: process.env.RDS_DATABASE,
   });
 
   const reservationId = event.queryStringParameters?.id;

@@ -4,9 +4,17 @@ import * as cdk from 'aws-cdk-lib';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import * as lambda from 'aws-cdk-lib/aws-lambda-nodejs';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 export class SingleLambdaStack extends cdk.Stack {
-  private api : RestApi = new RestApi(this, 'SpaceApi')
+  private api : RestApi = new RestApi(this, 'SpaceApi');
+  private rdsHost: string | undefined = process.env.RDS_HOST;
+  private rdsPort: string | undefined = process.env.RDS_PORT;
+  private rdsUser: string | undefined = process.env.RDS_USER;
+  private rdsPassword: string | undefined = process.env.RDS_PASSWORD;
+  private rdsDatabase: string | undefined = process.env.RDS_DATABASE;
 
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -22,6 +30,13 @@ export class SingleLambdaStack extends cdk.Stack {
         sourcesContent: false, // do not include original source into source map, defaults to true
         target: 'es2020', // target environment for the generated JavaScript code
       },
+      environment: {
+        RDS_HOST: this.rdsHost ?? '',
+        RDS_PORT: this.rdsPort ?? '',
+        RDS_USER: this.rdsUser ?? '',
+        RDS_PASSWORD: this.rdsPassword ?? '',
+        RDS_DATABASE: this.rdsDatabase ?? '',
+      }
     })
 
     const readLambda = new lambda.NodejsFunction(this, 'readLambda', {
@@ -35,6 +50,13 @@ export class SingleLambdaStack extends cdk.Stack {
         sourcesContent: false, // do not include original source into source map, defaults to true
         target: 'es2020', // target environment for the generated JavaScript code
       },
+      environment: {
+        RDS_HOST: this.rdsHost ?? '',
+        RDS_PORT: this.rdsPort ?? '',
+        RDS_USER: this.rdsUser ?? '',
+        RDS_PASSWORD: this.rdsPassword ?? '',
+        RDS_DATABASE: this.rdsDatabase ?? '',
+      }
     })
 
     const updateLambda = new lambda.NodejsFunction(this, 'updateLambda', {
@@ -48,6 +70,13 @@ export class SingleLambdaStack extends cdk.Stack {
         sourcesContent: false, // do not include original source into source map, defaults to true
         target: 'es2020', // target environment for the generated JavaScript code
       },
+      environment: {
+        RDS_HOST: this.rdsHost ?? '',
+        RDS_PORT: this.rdsPort ?? '',
+        RDS_USER: this.rdsUser ?? '',
+        RDS_PASSWORD: this.rdsPassword ?? '',
+        RDS_DATABASE: this.rdsDatabase ?? '',
+      }
     })
 
     const createLambda = new lambda.NodejsFunction(this, 'createLambda', {
@@ -61,6 +90,13 @@ export class SingleLambdaStack extends cdk.Stack {
         sourcesContent: false, // do not include original source into source map, defaults to true
         target: 'es2020', // target environment for the generated JavaScript code
       },
+      environment: {
+        RDS_HOST: this.rdsHost ?? '',
+        RDS_PORT: this.rdsPort ?? '',
+        RDS_USER: this.rdsUser ?? '',
+        RDS_PASSWORD: this.rdsPassword ?? '',
+        RDS_DATABASE: this.rdsDatabase ?? '',
+      }
     })
 
     const deleteLambda = new lambda.NodejsFunction(this, 'deleteLambda', {
@@ -74,6 +110,13 @@ export class SingleLambdaStack extends cdk.Stack {
         sourcesContent: false, // do not include original source into source map, defaults to true
         target: 'es2020', // target environment for the generated JavaScript code
       },
+      environment: {
+        RDS_HOST: this.rdsHost ?? '',
+        RDS_PORT: this.rdsPort ?? '',
+        RDS_USER: this.rdsUser ?? '',
+        RDS_PASSWORD: this.rdsPassword ?? '',
+        RDS_DATABASE: this.rdsDatabase ?? '',
+      }
     })
 
     // Lambda integrations

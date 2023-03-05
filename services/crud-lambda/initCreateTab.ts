@@ -1,11 +1,8 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import * as mysql from 'mysql2/promise';
+import * as dotenv from 'dotenv';
 
-const RDS_HOST = 'database-2.cmuvxrqhgxjx.us-east-1.rds.amazonaws.com';
-const RDS_PORT = 3306;
-const RDS_USER = 'admin';
-const RDS_PASSWORD = 'NonaNona';
-const RDS_DATABASE = 'reservationsDb';
+dotenv.config();
 
 const createTableQuery = `
     CREATE TABLE bookings (
@@ -35,11 +32,11 @@ const createTableQuery = `
 
 export const handler: APIGatewayProxyHandler = async (event: any, context: any) => {
   const connection = await mysql.createConnection({
-    host: RDS_HOST,
-    port: RDS_PORT,
-    user: RDS_USER,
-    password: RDS_PASSWORD,
-    database: RDS_DATABASE,
+    host: process.env.RDS_HOST,
+    port: Number(process.env.RDS_PORT),
+    user: process.env.RDS_USER,
+    password: process.env.RDS_PASSWORD,
+    database: process.env.RDS_DATABASE,
   });
 
   try {
