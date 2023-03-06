@@ -6,10 +6,10 @@ import { App } from "aws-cdk-lib";
 
 const app = new App()
 
-new SingleLambdaStack(app, 'SingleLambdaStack', {
-  stackName: 'SingleLambdaStack'
-})
-
-// new SearchFlowStack(app, 'SearchFlowStack', {
-//   stackName: 'SearchFlowStack'
+// new SingleLambdaStack(app, 'SingleLambdaStack', {
+//   stackName: 'SingleLambdaStack'
 // })
+
+new SearchFlowStack(app, 'SearchFlowStack', {
+  stackName: 'SearchFlowStack'
+})

@@ -15,11 +15,12 @@ cdk-outputs.json
 !jest.config.js
 *.d.ts
 node_modules
+test
 
 # CDK asset staging directory
 .cdk.staging
 .vscode
-test
+hidden-test
 services/crud-lambda/update-test.ts
 services/node-lambda/hello-test.ts
 
